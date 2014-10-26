@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Overlay (overlay-blackwhite)</title>
+	<meta name="viewport" content="width=900">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="generator" content="BBEdit 9.6" />
+<style type="text/css">
+body { font: 14px/160%; font-family:'Georgia', serif; background: black;margin:0}
+#image1 { position: absolute; top: 0; left: 0; }
+#image2 { position: absolute; top: 0; left: 0; }
+#divider { position: absolute; top:10px; width:38px; height:266px; cursor:pointer; background: url(divider.png);  }
+#container { }
+#tabs {left: 0; height: 70px; position: relative; background: hsla(60,0%,0%,0.5); text-align: center; font-size: 20px;padding-top:15px;top: -80px; }
+span { padding: 5px 25px;  cursor:pointer; } 
+
+</style>
+
+</head>
+<body>
+<div id="container">
+	<div id="image1"><img src="P1070556-a.jpg" width="1020" height="740" alt="" /></div>
+	<div id="image2" style="width: 19px; overflow: hidden;">
+        <div><img id="bw" src="P1070556.jpg" width="1020" height="740" alt="" /></div>
+    </div>
+	<div id="divider" draggable="false" style="cursor: pointer"></div>
+</div>
+<div id="tabs"></div>
+
+
+<script src="jquery-2.0.3.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+var bild1 = ['DSC02349-a.jpg',  'P1070556-a.jpg'];
+var bild2 = ['DSC02349.jpg','P1070556.jpg'];
+var thumb = ['DSC02349-thumb.jpg','P1070556-thumb.jpg'];
+var elems = 2;
+var w = parseInt($('#image1 img').attr('width'));
+var h = parseInt($('#image1 img').attr('height'));
+
+var rLoop;
+var interval = false;
+var onSlideNavigate = false;
+var defaultXValue = 150;
+var maxXValue = 1000;
+var minXValue = 19;
+var mouseXPosition = 150;
+
+var container = document.querySelector('#container'),
+	$container = $('#container'),
+	divider = document.querySelector('#divider'),
+	$divider = $('#divider'),
+	image2 = document.querySelector('#image2'),
+	$image2 = $('#image2'),
+	image_full = "",
+	image_profile= "";
+	
+
+$('#tabs').css({'margin-top':h + 'px','width':w + 'px'})
+for (var i=0; i<elems; i++) {
+	$('#tabs').append ('<span data-no="'+(i+1)+'" class="ticker"><img src="' + thumb[i] + ' " width="100"></span>');
+}
+$('.ticker').each(function() {
+	$(this).click(function() {
+		var text = parseInt($(this).attr('data-no')-1);
+		document.querySelector('#image1 img').src = (bild1[text]);
+		document.querySelector('#bw').src =   (bild2[text]);
+	})
+});
+
+
+
+function onClick(e) {
+	getMouseCoordinates(e);
+	render(true);
+}
+
+function setToDefaultValues() {
+	divider.style.left = (defaultXValue - 19) + "px";
+	//playMarker.draw(defaultXValue - 10);
+	image2.style.width = (defaultXValue) + "px";
+}
+
+var render = function(onlyClick) {
+	if(onSlideNavigate == true) {
+		divider.style.left = (mouseXPosition - 19) + "px";
+		image2.style.width = (mouseXPosition) + "px";
+		//console.log (image2.innerHTML)
+		clearTimeout(rLoop);
+		rLoop = setTimeout(render, 1000 / 60, false);
+	} else if(onlyClick == true) {
+		$image2.stop().animate();
+		$divider.stop().animate().animate({left: mouseXPosition - 10});	
+		$image2.animate({width: mouseXPosition});
+	}
+}
+
+function getMouseCoordinates(e) {
+	mouseXPosition = e.pageX - $container.offset().left;//container.offsetLeft;
+	if(mouseXPosition > maxXValue) {
+		mouseXPosition = maxXValue;
+	} else if(mouseXPosition < minXValue) {
+		mouseXPosition = minXValue;
+	}
+}
+
+function renderSlider() {
+	clearTimeout(rLoop);
+	rLoop = setTimeout(render, 1000 / 60, false);   
+}
+
+function onMouseUp() {
+	onSlideNavigate = false;
+	$('body').unbind('mousemove', getMouseCoordinates);
+}
+
+function onMouseDown(event) {
+	$('body').bind('mousemove', getMouseCoordinates);
+	onSlideNavigate = true;
+	renderSlider();
+	event.preventDefault();
+	return false;
+}
+
+function saveCoordinates() {
+	var touch = event.touches[0];
+	mouseXPosition = touch.pageX - container.offsetLeft;
+	if(mouseXPosition > maxXValue){
+		mouseXPosition = maxXValue;
+	} else if(mouseXPosition < minXValue){
+		mouseXPosition = minXValue;
+	}
+}
+
+function getTouchCoordinates(e) {
+	var touch = event.touches[0];
+	mouseXPosition = touch.pageX - container.offsetLeft;
+	if(mouseXPosition > maxXValue) {
+		mouseXPosition = maxXValue;
+	} else if(mouseXPosition < minXValue) {
+		mouseXPosition = minXValue;
+	}
+}
+
+setToDefaultValues();
+document.querySelector('#divider').addEventListener ('mousedown', onMouseDown, false);
+document.querySelector('#container').addEventListener ('mouseup', onMouseUp, false);
+
+document.getElementById("divider").addEventListener("touchstart", onMouseDown);
+document.addEventListener("touchend", onMouseUp);
+document.addEventListener("touchstart", saveCoordinates);
+document.addEventListener("touchmove", getTouchCoordinates);
+		
+document.getElementById("divider").ontouchdown = function(event) {
+	event.preventDefault();
+	return false;
+};
+
+</script>
+</body>
+</html>
